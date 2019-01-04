@@ -2,6 +2,7 @@ package cn.lovelywhite.interestmanager.Activity;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -323,10 +324,12 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
      * Represents an asynchronous login/registration task used to authenticate
      * the user.
      */
+    @SuppressLint("StaticFieldLeak")
     public class UserLoginTask extends AsyncTask<Void, Void, Integer> {
 
         private final String mEmail;
         private final String mPassword;
+
 
         UserLoginTask(String email, String password) {
             mEmail = email;
@@ -344,12 +347,13 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             showProgress(false);
             if (re == StaticValues.OK) {//成功
                 finish();
+                StaticValues.user = DataUtli.getUser(mEmail);//设置静态登陆数据
                 Intent intent = new Intent(LoginActivity.this,MainActivity.class);
-                startActivity(intent);
+                startActivity (intent);
             } else if(re == StaticValues.LINKDBFAILED) {//数据库连接失败
                 mPasswordView.setError(getString(R.string.check_internet));
             }
-            else if(re == StaticValues.FAILED){//密码错误
+            else if(re == StaticValues.FAILED){//失败
 
                 mPasswordView.setError(getString(R.string.error_incorrect_password));
                 mPasswordView.requestFocus();
@@ -363,6 +367,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         }
     }
 
+    @SuppressLint("StaticFieldLeak")
     public class UserSignTask extends AsyncTask<Void, Void, Integer> {
 
         private final String mEmail;
@@ -375,7 +380,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
         @Override
         protected Integer doInBackground(Void... params) {
-            return DataUtli.checkPassword(mEmail,mPassword);
+            return DataUtli.sign(mEmail,mPassword);
         }
 
         @Override
@@ -384,6 +389,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             showProgress(false);
             if (re == StaticValues.OK) {//成功
                 finish();
+                StaticValues.user = DataUtli.getUser(mEmail);//设置静态登陆数据
                 Intent intent = new Intent(LoginActivity.this,MainActivity.class);
                 startActivity(intent);
             } else if(re == StaticValues.FAILED) {

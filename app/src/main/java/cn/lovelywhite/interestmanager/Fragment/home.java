@@ -34,20 +34,16 @@ public class Home extends Fragment {
         baiduMap = mMapView.getMap();
         baiduMap.setMyLocationEnabled(true);
         location = new LocationListener();
-        // 开启定位图层
-        MyLocationData locData = new MyLocationData.Builder()
-                .accuracy(location.getRadius())
-                // 此处设置开发者获取到的方向信息，顺时针0-360
-                .latitude(location.getLatitude())
-                .longitude(location.getLongitude()).build();
-
-        // 设置定位数据
-        baiduMap.setMyLocationData(locData);
         return view;
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        MyLocationData locData = new MyLocationData.Builder()
+                .accuracy(location.getRadius())
+                .latitude(location.getLatitude())
+                .longitude(location.getLongitude()).build();
+        baiduMap.setMyLocationData(locData);
     }
 }

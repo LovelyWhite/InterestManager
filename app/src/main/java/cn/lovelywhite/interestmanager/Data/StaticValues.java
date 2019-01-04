@@ -2,6 +2,11 @@ package cn.lovelywhite.interestmanager.Data;
 
 import android.app.Application;
 import android.content.Context;
+import android.support.v4.app.Fragment;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Vector;
 
 
 //定义数据常量
@@ -16,10 +21,12 @@ public class StaticValues{
     //定义用户类型
     public final static int ADMIN = 1;//管理员
     public final static int ORDINARY = 0;//普通
-
+    public static Map<String,Fragment> fG  = new HashMap<>();
     //定义数据库链接
     public final static String DATABASE_URL = "jdbc:mysql://39.105.171.169:3306/interest_manage?user=root&password=Mishiweilai123&useSSL=false&TimeZone=UTC";
     public final static String DATABASE_DRIVER = "com.mysql.jdbc.Driver";
     public static Context AppContext;
 
+    //定义登陆的用户数据
+    public static User user;
 }
