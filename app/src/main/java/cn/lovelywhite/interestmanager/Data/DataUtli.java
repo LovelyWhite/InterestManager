@@ -32,31 +32,80 @@ public class DataUtli {
     }
     public static int checkPassword(String userEmail,String userPassword)
     {
-        int getI;
-        try {
-            if(cn == null||cn.isClosed())
-                if(StaticValues.FAILED==getConnection())
-                    return StaticValues.LINKDBFAILED;
-            cs = cn.prepareCall("{call password_check(?,?,?)}");
-            cs.setString(1,userEmail);
-            cs.setString(2,userPassword);
-            cs.registerOutParameter(3, Types.INTEGER);
-            cs.execute();
-            getI = cs.getInt(3);
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return StaticValues.EXCUTEFAILED;
+        if(userEmail==null||userEmail.isEmpty())
+        {
+            return StaticValues.USEREMAILEMPTY;
         }
-        finally {
+        if(userPassword==null||userPassword.isEmpty())
+        {
+            return StaticValues.USEREPASSWPRDEMPTY;
+        }
+        else
+        {
+            int getI;
             try {
-                if(cs!=null&&!cs.isClosed())
-                    cs.close();
-                if(cn!=null&&!cn.isClosed())
-                    cn.close();
+                if(cn == null||cn.isClosed())
+                    if(StaticValues.FAILED==getConnection())
+                        return StaticValues.LINKDBFAILED;
+                cs = cn.prepareCall("{call password_check(?,?,?)}");
+                cs.setString(1,userEmail);
+                cs.setString(2,userPassword);
+                cs.registerOutParameter(3, Types.INTEGER);
+                cs.execute();
+                getI = cs.getInt(3);
             } catch (SQLException e) {
                 e.printStackTrace();
+                return StaticValues.EXCUTEFAILED;
             }
+            finally {
+                try {
+                    if(cs!=null&&!cs.isClosed())
+                        cs.close();
+                    if(cn!=null&&!cn.isClosed())
+                        cn.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+            return getI;
         }
-        return getI;
     }
+
+    public static int sign(String userEmail,String userPassword)
+    {
+        if(userEmail==null||userEmail.isEmpty())
+        {
+            return StaticValues.USEREMAILEMPTY;
+        }
+        else
+        {
+            int getI;
+            try {
+                if(cn == null||cn.isClosed())
+                    if(StaticValues.FAILED==getConnection())
+                        return StaticValues.LINKDBFAILED;
+                cs = cn.prepareCall("{call user_sign(?,?,?)}");
+                cs.setString(1,userEmail);
+                cs.setString(2,userPassword);
+                cs.registerOutParameter(3, Types.INTEGER);
+                cs.execute();
+                getI = cs.getInt(3);
+            } catch (SQLException e) {
+                e.printStackTrace();
+                return StaticValues.EXCUTEFAILED;
+            }
+            finally {
+                try {
+                    if(cs!=null&&!cs.isClosed())
+                        cs.close();
+                    if(cn!=null&&!cn.isClosed())
+                        cn.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+            return getI;
+        }
+    }
+
 }

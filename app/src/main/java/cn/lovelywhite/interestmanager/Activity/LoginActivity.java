@@ -30,6 +30,9 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.baidu.mapapi.CoordType;
+import com.baidu.mapapi.SDKInitializer;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,6 +51,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     private static final int REQUEST_READ_CONTACTS = 0;
 
     private UserLoginTask mAuthTask = null;
+    private UserSignTask mSignTask = null;
 
     //UI 控件
     private AutoCompleteTextView mEmailView;
@@ -60,11 +64,13 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+     //  StaticValues.AppContext = ;
+        SDKInitializer.initialize(getApplicationContext());
         setContentView(R.layout.activity_login);
+        SDKInitializer.setCoordType(CoordType.BD09LL);
         // Set up the login form.
         mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
         populateAutoComplete();
-
         mPasswordView = (EditText) findViewById(R.id.password);
         mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
@@ -78,15 +84,22 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         });
 
         // 设置按键和监听
-        Button mEmailSignInButton = (Button) findViewById(R.id.email_sign_in_button);
-        mEmailSignInButton.setOnClickListener(new OnClickListener() {
+        Button mEmailLoginButton = (Button) findViewById(R.id.email_login);
+        Button mEmailSignButton = (Button) findViewById(R.id.email_sign);
+        mEmailLoginButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
                 attemptLogin();
             }
         });
+        mEmailSignButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                attemptSign();
+            }
+        });
 
-        mLoginFormView = findViewById(R.id.login_form);
+
         mProgressView = findViewById(R.id.login_progress);
     }
 
@@ -174,12 +187,8 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         }
 
         if (cancel) {
-            // There was an error; don't attempt login and focus the first
-            // form field with an error.
             focusView.requestFocus();
         } else {
-            // Show a progress spinner, and kick off a background task to
-            // perform the user login attempt.
             showProgress(true);
             mAuthTask = new UserLoginTask(email, password);
             mAuthTask.execute((Void) null);
@@ -196,39 +205,63 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         return password.length() > 4;
     }
 
-    /**
-     * Shows the progress UI and hides the login form.
-     */
     @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
     private void showProgress(final boolean show) {
-        // On Honeycomb MR2 we have the ViewPropertyAnimator APIs, which allow
-        // for very easy animations. If available, use these APIs to fade-in
-        // the progress spinner.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
             int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
 
-            mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
-            mLoginFormView.animate().setDuration(shortAnimTime).alpha(
-                    show ? 0 : 1).setListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
-                }
-            });
-
-            mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+            mProgressView.setVisibility(show ? View.VISIBLE : View.INVISIBLE);
             mProgressView.animate().setDuration(shortAnimTime).alpha(
                     show ? 1 : 0).setListener(new AnimatorListenerAdapter() {
                 @Override
                 public void onAnimationEnd(Animator animation) {
-                    mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+                    mProgressView.setVisibility(show ? View.VISIBLE : View.INVISIBLE);
                 }
             });
+    }
+
+
+    private void attemptSign() {
+        if (mAuthTask != null) {
+            return;
+        }
+
+        // Reset errors.
+        mEmailView.setError(null);
+        mPasswordView.setError(null);
+
+
+        String email = mEmailView.getText().toString();
+        String password = mPasswordView.getText().toString();
+
+        boolean cancel = false;
+        View focusView = null;
+
+        if (!TextUtils.isEmpty(password) && !isPasswordValid(password)) {
+            mPasswordView.setError(getString(R.string.error_invalid_password));
+            focusView = mPasswordView;
+            cancel = true;
+        }
+
+        if (TextUtils.isEmpty(email)) {
+            mEmailView.setError(getString(R.string.error_field_required));
+            focusView = mEmailView;
+            cancel = true;
+        } else if (!isEmailValid(email)) {
+            mEmailView.setError(getString(R.string.error_invalid_email));
+            focusView = mEmailView;
+            cancel = true;
+        }
+
+        if (cancel) {
+            // There was an error; don't attempt login and focus the first
+            // form field with an error.
+            focusView.requestFocus();
         } else {
-            // The ViewPropertyAnimator APIs are not available, so simply show
-            // and hide the relevant UI components.
-            mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
-            mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
+            // Show a progress spinner, and kick off a background task to
+            // perform the user login attempt.
+            showProgress(true);
+            mSignTask = new UserSignTask(email, password);
+            mSignTask.execute((Void) null);
         }
     }
 
@@ -302,7 +335,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
         @Override
         protected Integer doInBackground(Void... params) {
-
             return DataUtli.checkPassword(mEmail,mPassword);
         }
 
@@ -310,11 +342,15 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         protected void onPostExecute(final Integer re) {
             mAuthTask = null;
             showProgress(false);
-            System.out.println(re);
-            if (re == StaticValues.OK) {
+            if (re == StaticValues.OK) {//成功
+                finish();
                 Intent intent = new Intent(LoginActivity.this,MainActivity.class);
                 startActivity(intent);
-            } else {
+            } else if(re == StaticValues.LINKDBFAILED) {//数据库连接失败
+                mPasswordView.setError(getString(R.string.check_internet));
+            }
+            else if(re == StaticValues.FAILED){//密码错误
+
                 mPasswordView.setError(getString(R.string.error_incorrect_password));
                 mPasswordView.requestFocus();
             }
@@ -326,5 +362,43 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             showProgress(false);
         }
     }
+
+    public class UserSignTask extends AsyncTask<Void, Void, Integer> {
+
+        private final String mEmail;
+        private final String mPassword;
+
+        UserSignTask(String email, String password) {
+            mEmail = email;
+            mPassword = password;
+        }
+
+        @Override
+        protected Integer doInBackground(Void... params) {
+            return DataUtli.checkPassword(mEmail,mPassword);
+        }
+
+        @Override
+        protected void onPostExecute(final Integer re) {
+            mSignTask = null;
+            showProgress(false);
+            if (re == StaticValues.OK) {//成功
+                finish();
+                Intent intent = new Intent(LoginActivity.this,MainActivity.class);
+                startActivity(intent);
+            } else if(re == StaticValues.FAILED) {
+
+                mEmailView.setError(getString(R.string.user_email_exist));
+                mEmailView.requestFocus();
+            }
+        }
+
+        @Override
+        protected void onCancelled() {
+            mSignTask = null;
+            showProgress(false);
+        }
+    }
+
 }
 

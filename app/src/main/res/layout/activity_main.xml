@@ -12,11 +12,6 @@
     android:layout_height="wrap_content"
     app:layout_constraintBottom_toTopOf="@id/navigation"
     >
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="qeqe"
-        android:textAlignment="gravity"/>
 </FrameLayout>
 
     <android.support.design.widget.BottomNavigationView
