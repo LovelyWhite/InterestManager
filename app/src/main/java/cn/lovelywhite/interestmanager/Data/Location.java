@@ -1,21 +1,18 @@
 package cn.lovelywhite.interestmanager.Data;
-
 import android.content.Context;
 import com.baidu.location.LocationClient;
 import com.baidu.location.LocationClientOption;
 
+import cn.lovelywhite.interestmanager.Fragment.Home;
+
 public class Location {
-    private LocationListener myListener;
-    public LocationClient mLocationClient = null;
+    private LocationClient mLocationClient;
 
-    public Location(Context applicationContext) {
+
+    public Location(Context applicationContext,Home h) {
         mLocationClient = new LocationClient(applicationContext);
-
-        myListener = new LocationListener();
-
-        mLocationClient.registerLocationListener(myListener);
+        mLocationClient.registerLocationListener(h.new LocationListener());
         LocationClientOption option = new LocationClientOption();
-
         option.setLocationMode(LocationClientOption.LocationMode.Hight_Accuracy);
         //可选，设置定位模式，默认高精度
         //LocationMode.Hight_Accuracy：高精度；
@@ -29,7 +26,7 @@ public class Location {
         //BD09：百度墨卡托坐标；
         //海外地区定位，无需设置坐标类型，统一返回WGS84类型坐标
 
-        option.setScanSpan(1000);
+        option.setScanSpan(0);
         //可选，设置发起定位请求的间隔，int类型，单位ms
         //如果设置为0，则代表单次定位，即仅定位一次，默认为0
         //如果设置非0，需设置1000ms以上才有效

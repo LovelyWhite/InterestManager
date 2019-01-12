@@ -1,11 +1,9 @@
 <resources>
     <string name="app_name">InterestManager</string>
-    <string name="title_primary">概览</string>
-    <string name="title_manage">信息管理</string>
+    <string name="title_primary">信息管理</string>
+    <string name="title_manage">信息统计</string>
     <string name="title_setting">设置</string>
-    <string name="title_activity_login">登录</string>
-
-
+    <string name="title_activity_login">InterestManager</string>
     <string name="prompt_email">邮箱</string>
     <string name="prompt_password">密码</string>
     <string name="action_login">登录</string>
@@ -18,4 +16,5 @@
     <string name="permission_rationale">"请求获取联系人权限"</string>
     <string name="check_internet">请检查网络</string>
     <string name="user_email_exist">账户已存在</string>
+    <string name="error_not_exist_email">账号不存在</string>
 </resources>
